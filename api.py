@@ -5,6 +5,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+
 @app.route("/recommend", methods=["GET"])
 def recommend_college():
     college = recommender.recommend()
@@ -15,8 +16,9 @@ def recommend_college():
         "schoolState": str(college["STABBR"]),
         "schoolZip": str(college["ZIP"]),
         "schoolTuition": str(college["TUITIONFEE_IN"]),
+        "schoolUndergradPopulation": str(college["UGDS"]),
         "schoolWebsite": str(college["INSTURL"]),
-        "schoolAcceptanceRate": str(college["ADM_RATE"]),
+        "schoolAcceptanceRate": str(round(100 * college["ADM_RATE"], 2)) + "%",
         "schoolTopMajor": "N/A",
     }
     return jsonify(response)
@@ -33,8 +35,9 @@ def feedback():
         "schoolState": str(college["STABBR"]),
         "schoolZip": str(college["ZIP"]),
         "schoolTuition": str(college["TUITIONFEE_IN"]),
+        "schoolUndergradPopulation": str(college["UGDS"]),
         "schoolWebsite": str(college["INSTURL"]),
-        "schoolAcceptanceRate": str(college["ADM_RATE"]),
+        "schoolAcceptanceRate": str(round((100 * college["ADM_RATE"]), 2)) + "%",
         "schoolTopMajor": "N/A",
     }
     print(response)
