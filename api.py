@@ -1,17 +1,22 @@
 from flask import Flask, request, jsonify
-from model import recommender
 from flask_cors import CORS
+from model import SchoolPicker
+from model import DQNStudent
+from model import process_swipe
 
 app = Flask(__name__)
 CORS(app)
 
+env = SchoolPicker(drop_columns=True)
+agent = DQNStudent(state_size=env.num_features, action_size=len(env.remaining))
+
+state = env.restart()
 
 @app.route("/recommend", methods=["GET"])
 def recommend_college():
-    college = recommender.recommend()
-    recommender.last_recommended = college
+    college = env.information_on_current_school()
     response = {
-        "schoolName": str(college["INSTNM"]),
+        "schoolName": str(env.current_school),
         "schoolCity": str(college["CITY"]),
         "schoolState": str(college["STABBR"]),
         "schoolZip": str(college["ZIP"]),
@@ -28,9 +33,10 @@ def recommend_college():
 def feedback():
     data = request.json
     swipe_direction = data.get("swipe_direction")
-    college = recommender.handle_feedback(swipe_direction)
+    process_swipe(swipe_direction, agent, state, env)
+    college = env.information_on_current_school()
     response = {
-        "schoolName": str(college["INSTNM"]),
+        "schoolName": str(env.current_school),
         "schoolCity": str(college["CITY"]),
         "schoolState": str(college["STABBR"]),
         "schoolZip": str(college["ZIP"]),
